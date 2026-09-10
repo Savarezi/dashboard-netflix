@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ResponsiveContainer,
   PieChart,
@@ -14,6 +14,8 @@ import {
   LineChart,
   Line,
 } from 'recharts';
+import { Info, X, TrendingUp, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { TipoDataPoint, GeneroDataPoint, EvolucaoDataPoint, PaisDataPoint } from '../types';
 
 interface ChartsGridProps {
@@ -55,6 +57,22 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
   paisData,
   onSelectTipo,
 }) => {
+  const [showBoomInfo, setShowBoomInfo] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowBoomInfo(false);
+      }
+    };
+    if (showBoomInfo) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showBoomInfo]);
+
   const totalTitulosGrafico1 = tipoData.reduce((acc, curr) => acc + curr.value, 0);
 
   // Invert arrays for horizontal bar charts so largest appears on top
@@ -225,7 +243,18 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
               <span className="text-xs font-bold text-[#E50914] tracking-wider uppercase">
                 Gráfico 3 • Linha do Tempo
               </span>
-              <span className="text-[11px] text-neutral-400">2008 até 2021</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-neutral-400">2008 até 2021</span>
+                <button
+                  type="button"
+                  onClick={() => setShowBoomInfo(true)}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#202020] hover:bg-[#2b2b2b] text-[10px] font-medium text-amber-300 hover:text-amber-200 border border-amber-500/25 transition-all cursor-pointer shadow-sm active:scale-95"
+                  title="Por que houve o pico de 2019-2020?"
+                >
+                  <Info className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                  <span>Pico 2019</span>
+                </button>
+              </div>
             </div>
             <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
               Evolução: Títulos Adicionados por Ano
@@ -274,9 +303,21 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
             )}
           </div>
 
-          <div className="pt-3 border-t border-[#2a2a2a] flex items-center justify-between text-xs text-neutral-400">
+          <div className="pt-3 border-t border-[#2a2a2a] flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-400">
             <span>📈 Auge de expansão global do streaming entre 2018 e 2020</span>
-            <span className="text-emerald-400 font-semibold">Pico em 2019: 2.016 adições</span>
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-400 font-semibold">Pico em 2019: 2.016 adições</span>
+              <button
+                type="button"
+                onClick={() => setShowBoomInfo(true)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#222] hover:bg-[#2e2e2e] text-[10px] font-medium text-amber-300 hover:text-amber-200 border border-amber-500/30 transition-all cursor-pointer shadow-sm active:scale-95"
+                title="Por que houve um boom em 2019-2020?"
+                aria-label="Por que houve um boom de conteúdo e assinantes em 2019-2020?"
+              >
+                <Info className="w-3 h-3 text-amber-400 shrink-0" />
+                <span>Por que o pico?</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -344,6 +385,83 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Pop-up Suave: Boom de Conteúdo e Assinantes 2019-2020 */}
+      <AnimatePresence>
+        {showBoomInfo && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-pico-title"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowBoomInfo(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-lg rounded-2xl bg-[#141414] border border-[#333] shadow-2xl shadow-black/90 text-white p-5 sm:p-7"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Botão Fechar */}
+              <button
+                type="button"
+                onClick={() => setShowBoomInfo(false)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#222] hover:bg-[#333] text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Fechar janela"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Cabeçalho */}
+              <div className="flex items-start gap-3 mb-4 pr-6">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-white shadow-lg shrink-0 mt-0.5">
+                  <TrendingUp className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+                    Análise do Pico • Linha do Tempo
+                  </span>
+                  <h3 id="modal-pico-title" className="text-base sm:text-lg font-black text-white leading-snug mt-0.5">
+                    Por que houve um boom de conteúdo e de assinantes em 2019-2020?
+                  </h3>
+                </div>
+              </div>
+
+              {/* Conteúdo Explicativo */}
+              <div className="space-y-3 text-xs sm:text-sm text-neutral-300 leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a]">
+                  <p>
+                    O crescimento em 2020 foi causado pela pandemia de COVID-19. Com o isolamento social, as pessoas passaram mais tempo em casa e a procura por streaming disparou. A Netflix teve um recorde de novos assinantes só em 2020.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a]">
+                  <p>
+                    Esse aumento antecipou assinaturas que aconteceriam nos anos seguintes, por isso em 2021 e 2022 o crescimento caiu drasticamente, caracterizando a <strong className="text-white">&ldquo;ressaca da pandemia&rdquo;</strong>.
+                  </p>
+                </div>
+              </div>
+
+              {/* Rodapé do Pop-up */}
+              <div className="mt-5 pt-3.5 border-t border-[#262626] flex items-center justify-between">
+                <span className="text-[11px] text-neutral-500 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  Impacto global no streaming
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowBoomInfo(false)}
+                  className="px-4 py-1.5 rounded-lg bg-[#222] hover:bg-[#333] text-xs font-semibold text-white transition-colors cursor-pointer"
+                >
+                  Entendi
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
