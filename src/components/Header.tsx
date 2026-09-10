@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock } from 'lucide-react';
+import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock, Target, Users, TrendingUp } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isTargetAudienceOpen, setIsTargetAudienceOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setIsInfoOpen(false);
+        setIsTargetAudienceOpen(false);
       }
     };
-    if (isInfoOpen) {
+    if (isInfoOpen || isTargetAudienceOpen) {
       window.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
     }
@@ -18,7 +20,7 @@ export const Header: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [isInfoOpen]);
+  }, [isInfoOpen, isTargetAudienceOpen]);
 
   return (
     <>
@@ -48,20 +50,30 @@ export const Header: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap justify-end">
             <button
               type="button"
               onClick={() => setIsInfoOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-[#1e1e1e] hover:bg-[#2a2a2a] text-xs font-bold text-neutral-200 hover:text-white border border-[#333] hover:border-neutral-500 transition-all shadow-sm whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-[#1e1e1e] hover:bg-[#2a2a2a] text-xs font-bold text-neutral-200 hover:text-white border border-[#333] hover:border-neutral-500 transition-all shadow-sm whitespace-nowrap cursor-pointer active:scale-95"
               title="Ver informações importantes sobre a fundação da Netflix"
             >
               <Info className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span>Informação Importante</span>
             </button>
 
+            <button
+              type="button"
+              onClick={() => setIsTargetAudienceOpen(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-[#1e1e1e] hover:bg-[#2a2a2a] text-xs font-bold text-neutral-200 hover:text-white border border-[#333] hover:border-neutral-500 transition-all shadow-sm whitespace-nowrap cursor-pointer active:scale-95"
+              title="Ver o público-alvo da análise"
+            >
+              <Target className="w-3.5 h-3.5 text-[#E50914] shrink-0" />
+              <span>Público-Alvo</span>
+            </button>
+
             <a
               href="#linha-graficos"
-              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#E50914] hover:bg-[#b00710] text-xs font-bold text-white transition-all shadow-md shadow-red-900/30 whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#E50914] hover:bg-[#b00710] text-xs font-bold text-white transition-all shadow-md shadow-red-900/30 whitespace-nowrap active:scale-95"
             >
               <BarChart3 className="w-3.5 h-3.5" />
               <span>Ver Gráficos</span>
@@ -192,6 +204,90 @@ export const Header: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Pop-up / Modal com o Público-Alvo da Análise */}
+      {isTargetAudienceOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-target-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+          onClick={() => setIsTargetAudienceOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-[#141414] border border-[#333] shadow-2xl shadow-black/90 text-white p-5 sm:p-7"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Botão Fechar */}
+            <button
+              type="button"
+              onClick={() => setIsTargetAudienceOpen(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#222] hover:bg-[#333] text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Fechar janela"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Cabeçalho do Pop-up */}
+            <div className="flex items-center gap-2.5 mb-4 pr-8">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#E50914] to-[#990000] flex items-center justify-center text-white shadow-md shrink-0">
+                <Target className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold tracking-wider uppercase text-[#ff4a54]">
+                  Propósito Estratégico
+                </span>
+                <h2 id="modal-target-title" className="text-lg sm:text-xl font-black text-white">
+                  Público-Alvo da Análise
+                </h2>
+              </div>
+            </div>
+
+            {/* Mensagem do Usuário */}
+            <div className="space-y-3.5 text-xs sm:text-sm text-neutral-300 leading-relaxed">
+              <div className="p-4 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-neutral-200">
+                <p className="text-sm sm:text-base font-medium leading-relaxed text-neutral-100">
+                  O público-alvo da minha análise é qualquer pessoa interessada no mercado de streaming, mas principalmente para tomada de decisão de empresas de mídia, para entender o que produzir e onde investir.
+                </p>
+              </div>
+
+              {/* Destaques estruturados para fácil leitura */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <div className="p-3 rounded-xl bg-[#181818] border border-[#262626] flex items-start gap-2.5">
+                  <Users className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white text-xs block">Interessados em Geral</strong>
+                    <span className="text-[11px] text-neutral-400">Público geral curioso sobre o mercado de streaming.</span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-[#181818] border border-[#262626] flex items-start gap-2.5">
+                  <TrendingUp className="w-4 h-4 text-[#E50914] shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white text-xs block">Empresas de Mídia</strong>
+                    <span className="text-[11px] text-neutral-400">Tomada de decisão estratégica: o que produzir e onde investir.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rodapé do Modal */}
+            <div className="mt-5 pt-4 border-t border-[#2a2a2a] flex items-center justify-between">
+              <span className="text-[11px] text-neutral-500">
+                Dashboard Netflix • Inteligência de Conteúdo
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsTargetAudienceOpen(false)}
+                className="px-4 py-1.5 rounded-lg bg-[#222] hover:bg-[#333] text-xs font-semibold text-white transition-colors cursor-pointer"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
+
