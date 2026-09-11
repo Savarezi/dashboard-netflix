@@ -25,7 +25,7 @@ const PITCH_PARTS: PitchPart[] = [
   { id: 'b2-2', block: 2, text: 'E foi isso que eu analisei.', className: 'text-white font-black underline decoration-amber-400/80 decoration-2 underline-offset-4' },
 
   // Bloco 3 (P2): Decisão de Negócio
-  { id: 'b3-1', block: 3, text: 'Este dashboard vai mostrar para vocês como transformar isso em decisão de negócio — para ' },
+  { id: 'b3-1', block: 3, text: 'Eu vou mostrar pra vocês como transformar isso em decisões de negócio — para ' },
   { id: 'b3-2', block: 3, text: 'gestores de mídia saberem exatamente onde investir', className: 'inline-block font-extrabold text-[#ff4a54] underline decoration-[#E50914]/80 decoration-2 underline-offset-6 drop-shadow-[0_0_20px_rgba(229,9,20,0.35)]' },
   { id: 'b3-3', block: 3, text: '.' },
 ];
