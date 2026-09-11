@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock, Target, Users, TrendingUp } from 'lucide-react';
+import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock, Target, Users, TrendingUp, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export const Header: React.FC = () => {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -205,88 +206,146 @@ export const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Pop-up / Modal com o Público-Alvo da Análise */}
-      {isTargetAudienceOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-target-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
-          onClick={() => setIsTargetAudienceOpen(false)}
-        >
-          <div
-            className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-[#141414] border border-[#333] shadow-2xl shadow-black/90 text-white p-5 sm:p-7"
-            onClick={(e) => e.stopPropagation()}
+      {/* Modal / Pop-up de Tela Cheia (Fullscreen Overlay): Público-Alvo & Pitch Analítico */}
+      <AnimatePresence>
+        {isTargetAudienceOpen && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-target-title"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-50 flex flex-col justify-between bg-[#080808]/95 backdrop-blur-2xl text-white p-4 sm:p-8 md:p-12 overflow-y-auto"
+            onClick={() => setIsTargetAudienceOpen(false)}
           >
-            {/* Botão Fechar */}
-            <button
-              type="button"
-              onClick={() => setIsTargetAudienceOpen(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#222] hover:bg-[#333] text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-              aria-label="Fechar janela"
+            {/* Background Cinematográfico alinhado aos tons escuros do Dashboard */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+              <img
+                src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2000&auto=format&fit=crop"
+                alt="Cinema & Streaming Background"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover object-center opacity-15 filter contrast-125 brightness-50 scale-105"
+              />
+              {/* Overlays em degradê e vinheta profunda */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#0b0b0b]/90 to-[#080808]/95" />
+              <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#E50914]/15 rounded-full blur-[140px]" />
+              <div className="absolute -bottom-32 right-1/4 w-[500px] h-[300px] bg-red-900/10 rounded-full blur-[140px]" />
+            </div>
+
+            {/* Barra Superior do Fullscreen */}
+            <div
+              className="relative z-10 w-full max-w-5xl mx-auto flex items-center justify-between pb-4 border-b border-[#222]"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X className="w-4 h-4" />
-            </button>
-
-            {/* Cabeçalho do Pop-up */}
-            <div className="flex items-center gap-2.5 mb-4 pr-8">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#E50914] to-[#990000] flex items-center justify-center text-white shadow-md shrink-0">
-                <Target className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[11px] font-bold tracking-wider uppercase text-[#ff4a54]">
-                  Propósito Estratégico
-                </span>
-                <h2 id="modal-target-title" className="text-lg sm:text-xl font-black text-white">
-                  Público-Alvo da Análise
-                </h2>
-              </div>
-            </div>
-
-            {/* Mensagem do Usuário */}
-            <div className="space-y-3.5 text-xs sm:text-sm text-neutral-300 leading-relaxed">
-              <div className="p-4 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-neutral-200">
-                <p className="text-sm sm:text-base font-medium leading-relaxed text-neutral-100">
-                  O público-alvo da minha análise é qualquer pessoa interessada no mercado de streaming, mas principalmente para tomada de decisão de empresas de mídia, para entender o que produzir e onde investir.
-                </p>
-              </div>
-
-              {/* Destaques estruturados para fácil leitura */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                <div className="p-3 rounded-xl bg-[#181818] border border-[#262626] flex items-start gap-2.5">
-                  <Users className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-white text-xs block">Interessados em Geral</strong>
-                    <span className="text-[11px] text-neutral-400">Público geral curioso sobre o mercado de streaming.</span>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#E50914] to-[#990000] flex items-center justify-center font-black text-white text-lg shadow-lg shadow-red-950/60 ring-1 ring-white/20 select-none shrink-0">
+                  N
                 </div>
-
-                <div className="p-3 rounded-xl bg-[#181818] border border-[#262626] flex items-start gap-2.5">
-                  <TrendingUp className="w-4 h-4 text-[#E50914] shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-white text-xs block">Empresas de Mídia</strong>
-                    <span className="text-[11px] text-neutral-400">Tomada de decisão estratégica: o que produzir e onde investir.</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-black tracking-wider uppercase text-white">
+                    PÚBLICO-ALVO
+                  </span>
+                  <span className="hidden sm:inline-block text-neutral-600">•</span>
+                  <span className="hidden sm:inline-block text-xs font-semibold text-neutral-400">
+                    Tese Estratégica
+                  </span>
                 </div>
               </div>
-            </div>
 
-            {/* Rodapé do Modal */}
-            <div className="mt-5 pt-4 border-t border-[#2a2a2a] flex items-center justify-between">
-              <span className="text-[11px] text-neutral-500">
-                Dashboard Netflix • Inteligência de Conteúdo
-              </span>
+              {/* Botão Fechar Estilizado */}
               <button
                 type="button"
                 onClick={() => setIsTargetAudienceOpen(false)}
-                className="px-4 py-1.5 rounded-lg bg-[#222] hover:bg-[#333] text-xs font-semibold text-white transition-colors cursor-pointer"
+                className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#181818] hover:bg-[#252525] border border-[#333] hover:border-neutral-500 text-neutral-300 hover:text-white transition-all text-xs font-semibold cursor-pointer active:scale-95 shadow-sm"
+                aria-label="Fechar tela cheia"
               >
-                Entendi
+                <span className="hidden sm:inline">Fechar</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-neutral-400 font-mono border border-neutral-700/50">ESC</span>
+                <X className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors" />
               </button>
             </div>
-          </div>
-        </div>
-      )}
+
+            {/* Conteúdo Centralizado do Pitch */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="relative z-10 w-full max-w-4xl mx-auto my-auto py-8 sm:py-12 flex flex-col items-center text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Badge de Destaque */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#E50914]/15 border border-[#E50914]/30 text-xs font-bold tracking-widest uppercase text-[#ff4a54] mb-8 shadow-md shadow-red-950/30">
+                <Target className="w-3.5 h-3.5 text-[#E50914]" />
+                <span>Público-Alvo & Inteligência de Negócio</span>
+              </div>
+
+              {/* Bloco 1 do Pitch: Números e Contraste */}
+              <h2
+                id="modal-target-title"
+                className="text-2xl sm:text-4xl md:text-5xl lg:text-[50px] font-black tracking-tight text-white leading-tight sm:leading-snug md:leading-tight mb-8 sm:mb-10 max-w-3xl"
+              >
+                Em{' '}
+                <span className="inline-block px-3 py-0.5 mx-1 rounded-xl bg-[#1e1e1e] text-white font-black border border-[#333] shadow-md">
+                  2020
+                </span>
+                , enquanto{' '}
+                <span className="inline-block text-[#ff4a54] font-black underline decoration-[#E50914] decoration-4 underline-offset-8 drop-shadow-[0_0_25px_rgba(229,9,20,0.45)]">
+                  90% das empresas QUEBRAVAM
+                </span>
+                ... a Netflix ganhou{' '}
+                <span className="inline-block text-emerald-400 font-black drop-shadow-[0_0_25px_rgba(52,211,153,0.4)]">
+                  36 MILHÕES de assinantes
+                </span>
+                .
+              </h2>
+
+              {/* Divisor Decorativo com o vermelho do dashboard */}
+              <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-[#E50914]/60 to-transparent mb-8 sm:mb-10" />
+
+              {/* Bloco 2 do Pitch: O Porquê */}
+              <p className="text-xl sm:text-2xl md:text-3xl font-extrabold text-neutral-200 tracking-tight leading-snug mb-6 sm:mb-8 max-w-2xl">
+                Por quê? Porque ela sabia exatamente o que produzir.{' '}
+                <span className="text-white font-black underline decoration-amber-400/80 decoration-2 underline-offset-4">
+                  E foi isso que eu analisei.
+                </span>
+              </p>
+
+              {/* Bloco 3 do Pitch: Conexão com Decisão de Negócio */}
+              <p className="text-base sm:text-xl md:text-2xl font-medium text-neutral-300 leading-relaxed max-w-3xl">
+                Este dashboard vai mostrar para vocês como transformar isso em decisão de negócio — para{' '}
+                <span className="inline-block font-extrabold text-[#ff4a54] underline decoration-[#E50914]/80 decoration-2 underline-offset-6 drop-shadow-[0_0_20px_rgba(229,9,20,0.35)]">
+                  gestores de mídia saberem exatamente onde investir
+                </span>
+                .
+              </p>
+
+              {/* Botão de Ação: Voltar ao Dashboard no Vermelho Oficial Netflix */}
+              <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsTargetAudienceOpen(false)}
+                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-[#E50914] hover:bg-[#b00710] text-white font-black text-sm sm:text-base transition-all shadow-xl shadow-red-950/70 hover:shadow-red-900/80 hover:scale-105 active:scale-95 cursor-pointer ring-1 ring-white/20"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Voltar ao Dashboard</span>
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Rodapé Informativo */}
+            <div
+              className="relative z-10 w-full max-w-5xl mx-auto pt-4 border-t border-[#222] flex items-center justify-between text-xs text-neutral-500"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span>Dashboard Analítico Netflix • Tese Estratégica</span>
+              <span className="hidden sm:inline">Pressione ESC para fechar a qualquer momento</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
