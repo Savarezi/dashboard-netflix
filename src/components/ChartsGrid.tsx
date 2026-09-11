@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ResponsiveContainer,
   PieChart,
@@ -31,8 +31,9 @@ const CustomTooltip = ({ active, payload, label, unit = 'títulos' }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     const val = data.value;
-    const name = label || data.payload?.paisRotulo || data.payload?.generoFormatado || data.payload?.pais || data.name || data.payload?.name;
+    const name = label || data.payload?.rotuloPodio || data.payload?.paisRotulo || data.payload?.generoFormatado || data.payload?.pais || data.name || data.payload?.name;
     const pct = data.payload?.pct;
+    const dotColor = data.payload?.corTooltip || (typeof data.color === 'string' && !data.color.startsWith('url') ? data.color : '#E50914');
 
     return (
       <div className="rounded-xl bg-[#121212]/95 backdrop-blur-xl border border-white/10 px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.85)] ring-1 ring-[#E50914]/25 text-xs z-50">
@@ -40,7 +41,7 @@ const CustomTooltip = ({ active, payload, label, unit = 'títulos' }: any) => {
         <div className="flex items-center gap-2.5">
           <span
             className="w-3 h-3 rounded-full shadow-sm ring-1 ring-white/30 shrink-0"
-            style={{ backgroundColor: data.color || '#E50914' }}
+            style={{ backgroundColor: dotColor }}
           />
           <span className="text-neutral-300">
             <strong className="text-white font-black text-sm">{val?.toLocaleString('pt-BR')}</strong> {unit}
@@ -82,9 +83,66 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
 
   const totalTitulosGrafico1 = tipoData.reduce((acc, curr) => acc + curr.value, 0);
 
-  // Invert arrays for horizontal bar charts so largest appears on top
-  const topGenerosInvertidos = [...generoData].reverse();
-  const topPaisesInvertidos = [...paisData].reverse();
+  // Enriquecer gêneros com indicadores de pódio (🥇 1º, 🥈 2º, 🥉 3º) e gradientes luminosos
+  const topGenerosInvertidos = useMemo(() => {
+    return generoData
+      .map((item, index) => {
+        const rank = index + 1;
+        let rotuloPodio = item.generoFormatado;
+        let barFill = '#8f2d34'; // 4º ao 10º em tom suave avermelhado (mesma paleta, sem apagar)
+
+        if (rank === 1) {
+          rotuloPodio = `🥇 1º ${item.generoFormatado}`;
+          barFill = 'url(#gradGeneroPodio1)';
+        } else if (rank === 2) {
+          rotuloPodio = `🥈 2º ${item.generoFormatado}`;
+          barFill = 'url(#gradGeneroPodio2)';
+        } else if (rank === 3) {
+          rotuloPodio = `🥉 3º ${item.generoFormatado}`;
+          barFill = 'url(#gradGeneroPodio3)';
+        }
+
+        return {
+          ...item,
+          rank,
+          rotuloPodio,
+          barFill,
+          corTooltip: rank === 1 ? '#ff4d58' : rank === 2 ? '#E50914' : rank === 3 ? '#c40812' : '#a83e46',
+        };
+      })
+      .reverse();
+  }, [generoData]);
+
+  // Enriquecer países com indicadores de pódio (🥇 1º, 🥈 2º, 🥉 3º) e gradientes luminosos
+  const topPaisesInvertidos = useMemo(() => {
+    return paisData
+      .map((item, index) => {
+        const rank = index + 1;
+        const baseRotulo = item.paisRotulo || item.pais;
+        let rotuloPodio = baseRotulo;
+        let barFill = '#8a6127'; // 4º ao 10º em tom suave âmbar/dourado (mesma paleta, sem apagar)
+
+        if (rank === 1) {
+          rotuloPodio = `🥇 1º ${baseRotulo}`;
+          barFill = 'url(#gradPaisPodio1)';
+        } else if (rank === 2) {
+          rotuloPodio = `🥈 2º ${baseRotulo}`;
+          barFill = 'url(#gradPaisPodio2)';
+        } else if (rank === 3) {
+          rotuloPodio = `🥉 3º ${baseRotulo}`;
+          barFill = 'url(#gradPaisPodio3)';
+        }
+
+        return {
+          ...item,
+          rank,
+          rotuloPodio,
+          barFill,
+          corTooltip: rank === 1 ? '#FFD23F' : rank === 2 ? '#F5A623' : rank === 3 ? '#d98214' : '#9e712a',
+        };
+      })
+      .reverse();
+  }, [paisData]);
 
   return (
     <section id="linha-graficos" className="w-full space-y-6 sm:space-y-8">
@@ -205,6 +263,20 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
                   layout="vertical"
                   margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
                 >
+                  <defs>
+                    <linearGradient id="gradGeneroPodio1" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#ff4d58" />
+                      <stop offset="100%" stopColor="#E50914" />
+                    </linearGradient>
+                    <linearGradient id="gradGeneroPodio2" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#E50914" />
+                      <stop offset="100%" stopColor="#c40812" />
+                    </linearGradient>
+                    <linearGradient id="gradGeneroPodio3" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#c40812" />
+                      <stop offset="100%" stopColor="#990000" />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#2c2c2c" horizontal={false} />
                   <XAxis
                     type="number"
@@ -214,18 +286,21 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
                   />
                   <YAxis
                     type="category"
-                    dataKey="generoFormatado"
+                    dataKey="rotuloPodio"
                     stroke="#777"
                     tick={{ fill: '#d9d9d9', fontSize: 10, fontWeight: 500 }}
-                    width={115}
+                    width={140}
                   />
                   <Tooltip content={<CustomTooltip unit="títulos" />} />
                   <Bar
                     dataKey="count"
-                    fill="#E50914"
                     radius={[0, 6, 6, 0]}
                     barSize={16}
-                  />
+                  >
+                    {topGenerosInvertidos.map((entry, index) => (
+                      <Cell key={`cell-genero-${index}`} fill={entry.barFill} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -367,6 +442,20 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
                   layout="vertical"
                   margin={{ top: 10, right: 30, left: 5, bottom: 5 }}
                 >
+                  <defs>
+                    <linearGradient id="gradPaisPodio1" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#FFD23F" />
+                      <stop offset="100%" stopColor="#F5A623" />
+                    </linearGradient>
+                    <linearGradient id="gradPaisPodio2" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#F5A623" />
+                      <stop offset="100%" stopColor="#d98214" />
+                    </linearGradient>
+                    <linearGradient id="gradPaisPodio3" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#d98214" />
+                      <stop offset="100%" stopColor="#a35706" />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#2c2c2c" horizontal={false} />
                   <XAxis
                     type="number"
@@ -376,18 +465,21 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
                   />
                   <YAxis
                     type="category"
-                    dataKey="paisRotulo"
+                    dataKey="rotuloPodio"
                     stroke="#777"
                     tick={{ fill: '#d9d9d9', fontSize: 10.5, fontWeight: 500 }}
-                    width={160}
+                    width={185}
                   />
                   <Tooltip content={<CustomTooltip unit="títulos" />} />
                   <Bar
                     dataKey="count"
-                    fill="#F5A623"
                     radius={[0, 6, 6, 0]}
                     barSize={16}
-                  />
+                  >
+                    {topPaisesInvertidos.map((entry, index) => (
+                      <Cell key={`cell-pais-${index}`} fill={entry.barFill} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             )}
