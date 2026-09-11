@@ -429,13 +429,17 @@ export const Header: React.FC = () => {
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#E50914] to-[#990000] flex items-center justify-center font-black text-white text-lg shadow-lg shadow-red-950/60 ring-1 ring-white/20 select-none shrink-0">
                   N
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs sm:text-sm font-black tracking-wider uppercase text-white">
                     PÚBLICO-ALVO
                   </span>
                   <span className="hidden sm:inline-block text-neutral-600">•</span>
-                  <span className="hidden sm:inline-block text-xs font-semibold text-neutral-400">
+                  <span className="text-xs font-semibold text-neutral-400">
                     Tese Estratégica
+                  </span>
+                  <span className="text-neutral-600">•</span>
+                  <span className="text-[11px] sm:text-xs font-medium text-neutral-300 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
+                    Relatório Q4 2020 Netflix Inc. (36,6M novos assinantes)
                   </span>
                 </div>
               </div>
