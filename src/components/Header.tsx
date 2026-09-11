@@ -1,10 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock, Target, Users, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock, Target, Users, TrendingUp, ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const Header: React.FC = () => {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isTargetAudienceOpen, setIsTargetAudienceOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.warn('Fullscreen not available or denied:', err);
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,6 +100,20 @@ export const Header: React.FC = () => {
               <BarChart3 className="w-3.5 h-3.5" />
               <span>Ver Gráficos</span>
             </a>
+
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="inline-flex items-center justify-center p-1.5 sm:p-2 rounded-xl bg-[#1e1e1e] hover:bg-[#2a2a2a] text-neutral-400 hover:text-white border border-[#333] hover:border-neutral-500 transition-all shadow-sm cursor-pointer active:scale-95"
+              title={isFullscreen ? 'Sair do Modo Apresentação (Tela Cheia)' : 'Modo Apresentação (Tela Cheia)'}
+              aria-label="Alternar modo tela cheia"
+            >
+              {isFullscreen ? (
+                <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#ff4a54]" />
+              ) : (
+                <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-300 hover:text-white" />
+              )}
+            </button>
           </div>
         </div>
       </header>

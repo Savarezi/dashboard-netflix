@@ -11,8 +11,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
 } from 'recharts';
 import { Info, X, TrendingUp, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -26,7 +26,7 @@ interface ChartsGridProps {
   onSelectTipo?: (tipo: 'Filme' | 'Série') => void;
 }
 
-// Custom tooltip styling for dark luxury theme
+// Custom tooltip styling with Netflix glassmorphism and luminous accent
 const CustomTooltip = ({ active, payload, label, unit = 'títulos' }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0];
@@ -35,13 +35,20 @@ const CustomTooltip = ({ active, payload, label, unit = 'títulos' }: any) => {
     const pct = data.payload?.pct;
 
     return (
-      <div className="rounded-xl bg-[#141414]/95 backdrop-blur-md border border-[#333] px-3.5 py-2.5 shadow-2xl text-xs z-50">
-        <p className="font-bold text-white mb-1">{name}</p>
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: data.color || '#E50914' }} />
+      <div className="rounded-xl bg-[#121212]/95 backdrop-blur-xl border border-white/10 px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.85)] ring-1 ring-[#E50914]/25 text-xs z-50">
+        <p className="font-extrabold text-white text-sm mb-1.5 tracking-tight">{name}</p>
+        <div className="flex items-center gap-2.5">
+          <span
+            className="w-3 h-3 rounded-full shadow-sm ring-1 ring-white/30 shrink-0"
+            style={{ backgroundColor: data.color || '#E50914' }}
+          />
           <span className="text-neutral-300">
-            <strong className="text-white font-extrabold">{val?.toLocaleString('pt-BR')}</strong> {unit}
-            {pct !== undefined && <span className="ml-1 text-[#E50914] font-bold">({pct}%)</span>}
+            <strong className="text-white font-black text-sm">{val?.toLocaleString('pt-BR')}</strong> {unit}
+            {pct !== undefined && (
+              <span className="ml-2 px-1.5 py-0.5 rounded bg-[#E50914]/20 border border-[#E50914]/40 text-[#ff4a54] font-bold text-[11px]">
+                {pct}%
+              </span>
+            )}
           </span>
         </div>
       </div>
@@ -86,7 +93,7 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
         {/* Gráfico 1 - Título: "Proporção: Filmes vs Séries" */}
         <div
           id="chart-proporcao"
-          className="lg:col-span-5 rounded-2xl bg-[#181818] border border-[#2c2c2c] p-5 sm:p-6 shadow-xl flex flex-col justify-between"
+          className="lg:col-span-5 rounded-2xl bg-[#181818] border border-[#2c2c2c] hover:border-neutral-600 p-5 sm:p-6 shadow-xl hover:shadow-[0_12px_36px_rgba(0,0,0,0.6)] transition-all duration-300 flex flex-col justify-between"
         >
           <div>
             <div className="flex items-center justify-between gap-2 mb-1">
@@ -169,7 +176,7 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
         {/* Gráfico 2 - Título: "Top 10 Gêneros Mais Assistidos" */}
         <div
           id="chart-generos"
-          className="lg:col-span-7 rounded-2xl bg-[#181818] border border-[#2c2c2c] p-5 sm:p-6 shadow-xl flex flex-col justify-between"
+          className="lg:col-span-7 rounded-2xl bg-[#181818] border border-[#2c2c2c] hover:border-neutral-600 p-5 sm:p-6 shadow-xl hover:shadow-[0_12px_36px_rgba(0,0,0,0.6)] transition-all duration-300 flex flex-col justify-between"
         >
           <div>
             <div className="flex items-center justify-between gap-2 mb-1">
@@ -236,7 +243,7 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
         {/* Gráfico 3 - Título: "Evolução: Títulos Adicionados por Ano" */}
         <div
           id="chart-evolucao"
-          className="lg:col-span-7 rounded-2xl bg-[#181818] border border-[#2c2c2c] p-5 sm:p-6 shadow-xl flex flex-col justify-between"
+          className="lg:col-span-7 rounded-2xl bg-[#181818] border border-[#2c2c2c] hover:border-neutral-600 p-5 sm:p-6 shadow-xl hover:shadow-[0_12px_36px_rgba(0,0,0,0.6)] transition-all duration-300 flex flex-col justify-between"
         >
           <div>
             <div className="flex items-center justify-between gap-2 mb-1">
@@ -271,10 +278,16 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+                <AreaChart
                   data={evolucaoData}
                   margin={{ top: 15, right: 25, left: -5, bottom: 5 }}
                 >
+                  <defs>
+                    <linearGradient id="areaGlowNetflix" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#E50914" stopOpacity={0.32} />
+                      <stop offset="95%" stopColor="#E50914" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
                   <XAxis
                     dataKey="ano"
@@ -290,15 +303,16 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
                     content={<CustomTooltip unit="títulos adicionados" />}
                     labelFormatter={(label) => `Ano de Adição: ${label}`}
                   />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="count"
                     stroke="#E50914"
                     strokeWidth={3}
+                    fill="url(#areaGlowNetflix)"
                     dot={{ r: 4, fill: '#E50914', stroke: '#fff', strokeWidth: 1.5 }}
                     activeDot={{ r: 7, fill: '#ffffff', stroke: '#E50914', strokeWidth: 2.5 }}
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             )}
           </div>
@@ -324,7 +338,7 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
         {/* Gráfico 4 - Título: "Top 10 Países que Mais Produzem" */}
         <div
           id="chart-paises"
-          className="lg:col-span-5 rounded-2xl bg-[#181818] border border-[#2c2c2c] p-5 sm:p-6 shadow-xl flex flex-col justify-between"
+          className="lg:col-span-5 rounded-2xl bg-[#181818] border border-[#2c2c2c] hover:border-neutral-600 p-5 sm:p-6 shadow-xl hover:shadow-[0_12px_36px_rgba(0,0,0,0.6)] transition-all duration-300 flex flex-col justify-between"
         >
           <div>
             <div className="flex items-center justify-between gap-2 mb-1">
@@ -431,15 +445,9 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
 
               {/* Conteúdo Explicativo */}
               <div className="space-y-3 text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                <div className="p-3.5 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a]">
-                  <p>
+                <div className="p-4 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a]">
+                  <p className="text-neutral-200 leading-relaxed">
                     O crescimento em 2020 foi causado pela pandemia de COVID-19. Com o isolamento social, as pessoas passaram mais tempo em casa e a procura por streaming disparou. A Netflix teve um recorde de novos assinantes só em 2020.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a]">
-                  <p>
-                    Esse aumento antecipou assinaturas que aconteceriam nos anos seguintes, por isso em 2021 e 2022 o crescimento caiu drasticamente, caracterizando a <strong className="text-white">&ldquo;ressaca da pandemia&rdquo;</strong>.
                   </p>
                 </div>
               </div>
