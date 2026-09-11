@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock, Target, Users, TrendingUp, ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
+import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock, Target, Users, TrendingUp, ArrowLeft, Maximize2, Minimize2, Play, Pause, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface PitchPart {
@@ -51,6 +51,7 @@ export const Header: React.FC = () => {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isTargetAudienceOpen, setIsTargetAudienceOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [typedChars, setTypedChars] = useState(0);
 
   useEffect(() => {
@@ -90,25 +91,33 @@ export const Header: React.FC = () => {
     };
   }, [isInfoOpen, isTargetAudienceOpen]);
 
-  // Efeito de digitação suave estilo código quando o modal de público-alvo abre
+  // Reseta ao fechar o modal
   useEffect(() => {
     if (!isTargetAudienceOpen) {
+      setIsPlaying(false);
       setTypedChars(0);
+    }
+  }, [isTargetAudienceOpen]);
+
+  // Efeito de digitação suave estilo código quando o usuário aperta o Play
+  useEffect(() => {
+    if (!isTargetAudienceOpen || !isPlaying) {
       return;
     }
 
-    setTypedChars(0);
-    let current = 0;
+    let isMounted = true;
     let timer: NodeJS.Timeout;
 
-    const typeNext = () => {
+    const step = (current: number) => {
+      if (!isMounted) return;
       if (current >= TOTAL_PITCH_CHARS) {
+        setIsPlaying(false);
         return;
       }
-      current += 1;
-      setTypedChars(current);
+      const next = current + 1;
+      setTypedChars(next);
 
-      const char = ALL_PITCH_TEXT[current - 1];
+      const char = ALL_PITCH_TEXT[next - 1];
       let delay = 35; // base: devagarzinho e cadenciado
       if (char === '.' || char === '?' || char === '!') {
         delay = 260; // pausa reflexiva
@@ -118,19 +127,38 @@ export const Header: React.FC = () => {
         delay = 45;
       }
 
-      timer = setTimeout(typeNext, delay);
+      timer = setTimeout(() => step(next), delay);
     };
 
-    // Pequena pausa inicial (350ms) para animação de abertura do pop-up
-    timer = setTimeout(typeNext, 350);
+    timer = setTimeout(() => step(typedChars), 120);
 
     return () => {
+      isMounted = false;
       clearTimeout(timer);
     };
-  }, [isTargetAudienceOpen]);
+  }, [isTargetAudienceOpen, isPlaying]);
+
+  const handleStartPlay = () => {
+    setTypedChars(0);
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
+
+  const handleResume = () => {
+    setIsPlaying(true);
+  };
+
+  const handleRestart = () => {
+    setTypedChars(0);
+    setIsPlaying(true);
+  };
 
   const handleSkipTyping = () => {
     setTypedChars(TOTAL_PITCH_CHARS);
+    setIsPlaying(false);
   };
 
   // Renderizador de partes com cursor de terminal
@@ -440,49 +468,105 @@ export const Header: React.FC = () => {
                 <span>Público-Alvo & Inteligência de Negócio</span>
               </div>
 
-              {/* Bloco 1 do Pitch: Números e Contraste (Efeito Código Typewriter) */}
-              <h2
-                id="modal-target-title"
-                className="text-2xl sm:text-4xl md:text-5xl lg:text-[50px] font-black tracking-tight text-white leading-tight sm:leading-snug md:leading-tight mb-8 sm:mb-10 max-w-3xl min-h-[1.5em]"
-              >
-                {renderBlock(1, 0, BLOCK_1_END)}
-              </h2>
+              {!isPlaying && typedChars === 0 ? (
+                /* Estado Inicial: Aguardando o clique no Play */
+                <div className="my-10 sm:my-16 flex flex-col items-center gap-5 max-w-lg animate-fade-in">
+                  <button
+                    type="button"
+                    onClick={handleStartPlay}
+                    className="group relative inline-flex items-center gap-4 px-8 sm:px-10 py-4 sm:py-5 rounded-2xl bg-gradient-to-r from-[#E50914] via-[#d00812] to-[#b00710] hover:from-[#ff1e27] hover:to-[#E50914] text-white font-black text-lg sm:text-xl shadow-[0_0_40px_rgba(229,9,20,0.65)] hover:shadow-[0_0_60px_rgba(229,9,20,0.9)] hover:scale-105 active:scale-95 transition-all cursor-pointer ring-2 ring-white/25"
+                  >
+                    <span className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-inner">
+                      <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                    </span>
+                    <span>Aperte o Play para Iniciar</span>
+                  </button>
+                  <p className="text-xs sm:text-sm text-neutral-400 font-medium text-center">
+                    Clique no botão acima quando quiser iniciar a digitação do pitch na tela
+                  </p>
+                </div>
+              ) : (
+                /* Conteúdo em Digitação ou Concluído */
+                <>
+                  {/* Bloco 1 do Pitch: Números e Contraste (Efeito Código Typewriter) */}
+                  <h2
+                    id="modal-target-title"
+                    className="text-2xl sm:text-4xl md:text-5xl lg:text-[50px] font-black tracking-tight text-white leading-tight sm:leading-snug md:leading-tight mb-8 sm:mb-10 max-w-3xl min-h-[1.5em]"
+                  >
+                    {renderBlock(1, 0, BLOCK_1_END)}
+                  </h2>
 
-              {/* Divisor Decorativo com o vermelho do dashboard */}
-              {typedChars >= BLOCK_2_START && (
-                <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-[#E50914]/60 to-transparent mb-8 sm:mb-10 animate-fade-in" />
+                  {/* Divisor Decorativo com o vermelho do dashboard */}
+                  {typedChars >= BLOCK_2_START && (
+                    <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-[#E50914]/60 to-transparent mb-8 sm:mb-10 animate-fade-in" />
+                  )}
+
+                  {/* Bloco 2 do Pitch: O Porquê */}
+                  {typedChars >= BLOCK_2_START && (
+                    <p className="text-xl sm:text-2xl md:text-3xl font-extrabold text-neutral-200 tracking-tight leading-snug mb-6 sm:mb-8 max-w-2xl min-h-[1.3em]">
+                      {renderBlock(2, BLOCK_2_START, BLOCK_2_END)}
+                    </p>
+                  )}
+
+                  {/* Bloco 3 do Pitch: Conexão com Decisão de Negócio */}
+                  {typedChars >= BLOCK_3_START && (
+                    <p className="text-base sm:text-xl md:text-2xl font-medium text-neutral-300 leading-relaxed max-w-3xl min-h-[1.3em]">
+                      {renderBlock(3, BLOCK_3_START, TOTAL_PITCH_CHARS)}
+                    </p>
+                  )}
+                </>
               )}
 
-              {/* Bloco 2 do Pitch: O Porquê */}
-              {typedChars >= BLOCK_2_START && (
-                <p className="text-xl sm:text-2xl md:text-3xl font-extrabold text-neutral-200 tracking-tight leading-snug mb-6 sm:mb-8 max-w-2xl min-h-[1.3em]">
-                  {renderBlock(2, BLOCK_2_START, BLOCK_2_END)}
-                </p>
-              )}
-
-              {/* Bloco 3 do Pitch: Conexão com Decisão de Negócio */}
-              {typedChars >= BLOCK_3_START && (
-                <p className="text-base sm:text-xl md:text-2xl font-medium text-neutral-300 leading-relaxed max-w-3xl min-h-[1.3em]">
-                  {renderBlock(3, BLOCK_3_START, TOTAL_PITCH_CHARS)}
-                </p>
-              )}
-
-              {/* Botão de Ação: Voltar ao Dashboard no Vermelho Oficial Netflix */}
-              <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center gap-3">
+              {/* Botões de Ação e Controles */}
+              <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-3">
                 <button
                   type="button"
                   onClick={() => setIsTargetAudienceOpen(false)}
-                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-[#E50914] hover:bg-[#b00710] text-white font-black text-sm sm:text-base transition-all shadow-xl shadow-red-950/70 hover:shadow-red-900/80 hover:scale-105 active:scale-95 cursor-pointer ring-1 ring-white/20"
+                  className="inline-flex items-center gap-2.5 px-7 py-3 rounded-2xl bg-[#E50914] hover:bg-[#b00710] text-white font-black text-sm sm:text-base transition-all shadow-xl shadow-red-950/70 hover:shadow-red-900/80 hover:scale-105 active:scale-95 cursor-pointer ring-1 ring-white/20"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Voltar ao Dashboard</span>
                 </button>
 
-                {typedChars < TOTAL_PITCH_CHARS && (
+                {isPlaying && typedChars < TOTAL_PITCH_CHARS && (
+                  <button
+                    type="button"
+                    onClick={handlePause}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-neutral-200 hover:text-white border border-white/15 transition-all cursor-pointer"
+                  >
+                    <Pause className="w-3.5 h-3.5" />
+                    <span>Pausar</span>
+                  </button>
+                )}
+
+                {!isPlaying && typedChars > 0 && typedChars < TOTAL_PITCH_CHARS && (
+                  <button
+                    type="button"
+                    onClick={handleResume}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-neutral-200 hover:text-white border border-white/15 transition-all cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                    <span>Continuar</span>
+                  </button>
+                )}
+
+                {typedChars > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleRestart}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-neutral-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+                    title="Reiniciar digitação do início"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reiniciar</span>
+                  </button>
+                )}
+
+                {(isPlaying || typedChars > 0) && typedChars < TOTAL_PITCH_CHARS && (
                   <button
                     type="button"
                     onClick={handleSkipTyping}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-neutral-400 hover:text-white border border-white/10 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-neutral-400 hover:text-white border border-white/10 transition-all cursor-pointer"
                   >
                     <span>Mostrar texto completo</span>
                   </button>
