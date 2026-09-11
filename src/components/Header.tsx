@@ -118,13 +118,13 @@ export const Header: React.FC = () => {
       setTypedChars(next);
 
       const char = ALL_PITCH_TEXT[next - 1];
-      let delay = 35; // base: devagarzinho e cadenciado
+      let delay = 75; // base: digitação bem mais devagar e legível
       if (char === '.' || char === '?' || char === '!') {
-        delay = 260; // pausa reflexiva
+        delay = 550; // pausa mais longa entre frases para leitura
       } else if (char === ',' || char === '—') {
-        delay = 150; // pausa de pontuação
+        delay = 320; // pausa natural de pontuação
       } else if (char === ' ') {
-        delay = 45;
+        delay = 85;
       }
 
       timer = setTimeout(() => step(next), delay);
@@ -469,8 +469,8 @@ export const Header: React.FC = () => {
               </div>
 
               {!isPlaying && typedChars === 0 ? (
-                /* Estado Inicial: Aguardando o clique no Play */
-                <div className="my-10 sm:my-16 flex flex-col items-center gap-5 max-w-lg animate-fade-in">
+                /* Estado Inicial: Apenas o alerta em vermelho, o botão de play e o botão de voltar */
+                <div className="my-10 sm:my-16 flex flex-col items-center gap-6 animate-fade-in">
                   <button
                     type="button"
                     onClick={handleStartPlay}
@@ -481,9 +481,15 @@ export const Header: React.FC = () => {
                     </span>
                     <span>Aperte o Play para Iniciar</span>
                   </button>
-                  <p className="text-xs sm:text-sm text-neutral-400 font-medium text-center">
-                    Clique no botão acima quando quiser iniciar a digitação do pitch na tela
-                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsTargetAudienceOpen(false)}
+                    className="inline-flex items-center gap-2.5 px-7 py-3 rounded-2xl bg-[#181818] hover:bg-[#252525] border border-[#333] hover:border-neutral-500 text-neutral-300 hover:text-white font-semibold text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Voltar ao Dashboard</span>
+                  </button>
                 </div>
               ) : (
                 /* Conteúdo em Digitação ou Concluído */
@@ -514,64 +520,64 @@ export const Header: React.FC = () => {
                       {renderBlock(3, BLOCK_3_START, TOTAL_PITCH_CHARS)}
                     </p>
                   )}
+
+                  {/* Botões de Ação e Controles durante/após a digitação */}
+                  <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsTargetAudienceOpen(false)}
+                      className="inline-flex items-center gap-2.5 px-7 py-3 rounded-2xl bg-[#E50914] hover:bg-[#b00710] text-white font-black text-sm sm:text-base transition-all shadow-xl shadow-red-950/70 hover:shadow-red-900/80 hover:scale-105 active:scale-95 cursor-pointer ring-1 ring-white/20"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      <span>Voltar ao Dashboard</span>
+                    </button>
+
+                    {isPlaying && typedChars < TOTAL_PITCH_CHARS && (
+                      <button
+                        type="button"
+                        onClick={handlePause}
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-neutral-200 hover:text-white border border-white/15 transition-all cursor-pointer"
+                      >
+                        <Pause className="w-3.5 h-3.5" />
+                        <span>Pausar</span>
+                      </button>
+                    )}
+
+                    {!isPlaying && typedChars > 0 && typedChars < TOTAL_PITCH_CHARS && (
+                      <button
+                        type="button"
+                        onClick={handleResume}
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-neutral-200 hover:text-white border border-white/15 transition-all cursor-pointer"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-white" />
+                        <span>Continuar</span>
+                      </button>
+                    )}
+
+                    {typedChars > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleRestart}
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-neutral-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+                        title="Reiniciar digitação do início"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Reiniciar</span>
+                      </button>
+                    )}
+
+                    {(isPlaying || typedChars > 0) && typedChars < TOTAL_PITCH_CHARS && (
+                      <button
+                        type="button"
+                        onClick={handleSkipTyping}
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-neutral-400 hover:text-white border border-white/10 transition-all cursor-pointer"
+                      >
+                        <span>Mostrar texto completo</span>
+                      </button>
+                    )}
+                  </div>
                 </>
               )}
-
-              {/* Botões de Ação e Controles */}
-              <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsTargetAudienceOpen(false)}
-                  className="inline-flex items-center gap-2.5 px-7 py-3 rounded-2xl bg-[#E50914] hover:bg-[#b00710] text-white font-black text-sm sm:text-base transition-all shadow-xl shadow-red-950/70 hover:shadow-red-900/80 hover:scale-105 active:scale-95 cursor-pointer ring-1 ring-white/20"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar ao Dashboard</span>
-                </button>
-
-                {isPlaying && typedChars < TOTAL_PITCH_CHARS && (
-                  <button
-                    type="button"
-                    onClick={handlePause}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-neutral-200 hover:text-white border border-white/15 transition-all cursor-pointer"
-                  >
-                    <Pause className="w-3.5 h-3.5" />
-                    <span>Pausar</span>
-                  </button>
-                )}
-
-                {!isPlaying && typedChars > 0 && typedChars < TOTAL_PITCH_CHARS && (
-                  <button
-                    type="button"
-                    onClick={handleResume}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-neutral-200 hover:text-white border border-white/15 transition-all cursor-pointer"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-white" />
-                    <span>Continuar</span>
-                  </button>
-                )}
-
-                {typedChars > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleRestart}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-neutral-300 hover:text-white border border-white/10 transition-all cursor-pointer"
-                    title="Reiniciar digitação do início"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Reiniciar</span>
-                  </button>
-                )}
-
-                {(isPlaying || typedChars > 0) && typedChars < TOTAL_PITCH_CHARS && (
-                  <button
-                    type="button"
-                    onClick={handleSkipTyping}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-neutral-400 hover:text-white border border-white/10 transition-all cursor-pointer"
-                  >
-                    <span>Mostrar texto completo</span>
-                  </button>
-                )}
-              </div>
             </motion.div>
 
             {/* Rodapé Informativo */}
