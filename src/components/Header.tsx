@@ -118,13 +118,13 @@ export const Header: React.FC = () => {
       setTypedChars(next);
 
       const char = ALL_PITCH_TEXT[next - 1];
-      let delay = 75; // base: digitação bem mais devagar e legível
+      let delay = 48; // base: ritmo equilibrado e dinâmico
       if (char === '.' || char === '?' || char === '!') {
-        delay = 550; // pausa mais longa entre frases para leitura
+        delay = 360; // pausa entre frases
       } else if (char === ',' || char === '—') {
-        delay = 320; // pausa natural de pontuação
+        delay = 200; // pausa de pontuação
       } else if (char === ' ') {
-        delay = 85;
+        delay = 55;
       }
 
       timer = setTimeout(() => step(next), delay);
