@@ -2,10 +2,56 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, BarChart3, Info, X, Calendar, Disc, Tv, Globe, Clock, Target, Users, TrendingUp, ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+interface PitchPart {
+  id: string;
+  block: 1 | 2 | 3;
+  text: string;
+  className?: string;
+}
+
+// Partes estilizadas do pitch para o efeito typewriter estilo código
+const PITCH_PARTS: PitchPart[] = [
+  // Bloco 1 (H2): 2020 e contraste
+  { id: 'b1-1', block: 1, text: 'Em ' },
+  { id: 'b1-2', block: 1, text: '2020', className: 'inline-block px-3 py-0.5 mx-1 rounded-xl bg-[#1e1e1e] text-white font-black border border-[#333] shadow-md' },
+  { id: 'b1-3', block: 1, text: ', enquanto ' },
+  { id: 'b1-4', block: 1, text: '90% das empresas QUEBRAVAM', className: 'inline-block text-[#ff4a54] font-black underline decoration-[#E50914] decoration-4 underline-offset-8 drop-shadow-[0_0_25px_rgba(229,9,20,0.45)]' },
+  { id: 'b1-5', block: 1, text: '... a Netflix ganhou ' },
+  { id: 'b1-6', block: 1, text: '36 MILHÕES de assinantes', className: 'inline-block text-emerald-400 font-black drop-shadow-[0_0_25px_rgba(52,211,153,0.4)]' },
+  { id: 'b1-7', block: 1, text: '.' },
+
+  // Bloco 2 (P1): O Porquê
+  { id: 'b2-1', block: 2, text: 'Por quê? Porque ela sabia exatamente o que produzir. ' },
+  { id: 'b2-2', block: 2, text: 'E foi isso que eu analisei.', className: 'text-white font-black underline decoration-amber-400/80 decoration-2 underline-offset-4' },
+
+  // Bloco 3 (P2): Decisão de Negócio
+  { id: 'b3-1', block: 3, text: 'Este dashboard vai mostrar para vocês como transformar isso em decisão de negócio — para ' },
+  { id: 'b3-2', block: 3, text: 'gestores de mídia saberem exatamente onde investir', className: 'inline-block font-extrabold text-[#ff4a54] underline decoration-[#E50914]/80 decoration-2 underline-offset-6 drop-shadow-[0_0_20px_rgba(229,9,20,0.35)]' },
+  { id: 'b3-3', block: 3, text: '.' },
+];
+
+// Pré-computa posições e limites de cada caractere
+let runningOffset = 0;
+const PITCH_PARTS_WITH_OFFSETS = PITCH_PARTS.map((part) => {
+  const start = runningOffset;
+  const end = runningOffset + part.text.length;
+  runningOffset = end;
+  return { ...part, start, end };
+});
+
+const ALL_PITCH_TEXT = PITCH_PARTS.map((p) => p.text).join('');
+const TOTAL_PITCH_CHARS = ALL_PITCH_TEXT.length;
+
+const BLOCK_1_END = PITCH_PARTS_WITH_OFFSETS.filter((p) => p.block === 1).slice(-1)[0].end;
+const BLOCK_2_START = PITCH_PARTS_WITH_OFFSETS.filter((p) => p.block === 2)[0].start;
+const BLOCK_2_END = PITCH_PARTS_WITH_OFFSETS.filter((p) => p.block === 2).slice(-1)[0].end;
+const BLOCK_3_START = PITCH_PARTS_WITH_OFFSETS.filter((p) => p.block === 3)[0].start;
+
 export const Header: React.FC = () => {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isTargetAudienceOpen, setIsTargetAudienceOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [typedChars, setTypedChars] = useState(0);
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -43,6 +89,83 @@ export const Header: React.FC = () => {
       document.body.style.overflow = '';
     };
   }, [isInfoOpen, isTargetAudienceOpen]);
+
+  // Efeito de digitação suave estilo código quando o modal de público-alvo abre
+  useEffect(() => {
+    if (!isTargetAudienceOpen) {
+      setTypedChars(0);
+      return;
+    }
+
+    setTypedChars(0);
+    let current = 0;
+    let timer: NodeJS.Timeout;
+
+    const typeNext = () => {
+      if (current >= TOTAL_PITCH_CHARS) {
+        return;
+      }
+      current += 1;
+      setTypedChars(current);
+
+      const char = ALL_PITCH_TEXT[current - 1];
+      let delay = 35; // base: devagarzinho e cadenciado
+      if (char === '.' || char === '?' || char === '!') {
+        delay = 260; // pausa reflexiva
+      } else if (char === ',' || char === '—') {
+        delay = 150; // pausa de pontuação
+      } else if (char === ' ') {
+        delay = 45;
+      }
+
+      timer = setTimeout(typeNext, delay);
+    };
+
+    // Pequena pausa inicial (350ms) para animação de abertura do pop-up
+    timer = setTimeout(typeNext, 350);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [isTargetAudienceOpen]);
+
+  const handleSkipTyping = () => {
+    setTypedChars(TOTAL_PITCH_CHARS);
+  };
+
+  // Renderizador de partes com cursor de terminal
+  const renderBlock = (blockNumber: 1 | 2 | 3, blockStart: number, blockEnd: number) => {
+    if (typedChars < blockStart) {
+      return null;
+    }
+
+    const parts = PITCH_PARTS_WITH_OFFSETS.filter((p) => p.block === blockNumber);
+    const isCurrentlyTypingThisBlock = typedChars >= blockStart && typedChars < blockEnd;
+
+    return (
+      <>
+        {parts.map((part) => {
+          if (typedChars <= part.start) {
+            return null;
+          }
+          const visibleText = part.text.slice(0, Math.max(0, typedChars - part.start));
+          if (part.className) {
+            return (
+              <span key={part.id} className={part.className}>
+                {visibleText}
+              </span>
+            );
+          }
+          return <React.Fragment key={part.id}>{visibleText}</React.Fragment>;
+        })}
+        {isCurrentlyTypingThisBlock && (
+          <span className="inline-block text-[#E50914] font-mono font-black animate-pulse ml-1 drop-shadow-[0_0_10px_rgba(229,9,20,0.85)] select-none">
+            ▌
+          </span>
+        )}
+      </>
+    );
+  };
 
   return (
     <>
@@ -317,45 +440,32 @@ export const Header: React.FC = () => {
                 <span>Público-Alvo & Inteligência de Negócio</span>
               </div>
 
-              {/* Bloco 1 do Pitch: Números e Contraste */}
+              {/* Bloco 1 do Pitch: Números e Contraste (Efeito Código Typewriter) */}
               <h2
                 id="modal-target-title"
-                className="text-2xl sm:text-4xl md:text-5xl lg:text-[50px] font-black tracking-tight text-white leading-tight sm:leading-snug md:leading-tight mb-8 sm:mb-10 max-w-3xl"
+                className="text-2xl sm:text-4xl md:text-5xl lg:text-[50px] font-black tracking-tight text-white leading-tight sm:leading-snug md:leading-tight mb-8 sm:mb-10 max-w-3xl min-h-[1.5em]"
               >
-                Em{' '}
-                <span className="inline-block px-3 py-0.5 mx-1 rounded-xl bg-[#1e1e1e] text-white font-black border border-[#333] shadow-md">
-                  2020
-                </span>
-                , enquanto{' '}
-                <span className="inline-block text-[#ff4a54] font-black underline decoration-[#E50914] decoration-4 underline-offset-8 drop-shadow-[0_0_25px_rgba(229,9,20,0.45)]">
-                  90% das empresas QUEBRAVAM
-                </span>
-                ... a Netflix ganhou{' '}
-                <span className="inline-block text-emerald-400 font-black drop-shadow-[0_0_25px_rgba(52,211,153,0.4)]">
-                  36 MILHÕES de assinantes
-                </span>
-                .
+                {renderBlock(1, 0, BLOCK_1_END)}
               </h2>
 
               {/* Divisor Decorativo com o vermelho do dashboard */}
-              <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-[#E50914]/60 to-transparent mb-8 sm:mb-10" />
+              {typedChars >= BLOCK_2_START && (
+                <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-[#E50914]/60 to-transparent mb-8 sm:mb-10 animate-fade-in" />
+              )}
 
               {/* Bloco 2 do Pitch: O Porquê */}
-              <p className="text-xl sm:text-2xl md:text-3xl font-extrabold text-neutral-200 tracking-tight leading-snug mb-6 sm:mb-8 max-w-2xl">
-                Por quê? Porque ela sabia exatamente o que produzir.{' '}
-                <span className="text-white font-black underline decoration-amber-400/80 decoration-2 underline-offset-4">
-                  E foi isso que eu analisei.
-                </span>
-              </p>
+              {typedChars >= BLOCK_2_START && (
+                <p className="text-xl sm:text-2xl md:text-3xl font-extrabold text-neutral-200 tracking-tight leading-snug mb-6 sm:mb-8 max-w-2xl min-h-[1.3em]">
+                  {renderBlock(2, BLOCK_2_START, BLOCK_2_END)}
+                </p>
+              )}
 
               {/* Bloco 3 do Pitch: Conexão com Decisão de Negócio */}
-              <p className="text-base sm:text-xl md:text-2xl font-medium text-neutral-300 leading-relaxed max-w-3xl">
-                Este dashboard vai mostrar para vocês como transformar isso em decisão de negócio — para{' '}
-                <span className="inline-block font-extrabold text-[#ff4a54] underline decoration-[#E50914]/80 decoration-2 underline-offset-6 drop-shadow-[0_0_20px_rgba(229,9,20,0.35)]">
-                  gestores de mídia saberem exatamente onde investir
-                </span>
-                .
-              </p>
+              {typedChars >= BLOCK_3_START && (
+                <p className="text-base sm:text-xl md:text-2xl font-medium text-neutral-300 leading-relaxed max-w-3xl min-h-[1.3em]">
+                  {renderBlock(3, BLOCK_3_START, TOTAL_PITCH_CHARS)}
+                </p>
+              )}
 
               {/* Botão de Ação: Voltar ao Dashboard no Vermelho Oficial Netflix */}
               <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center gap-3">
@@ -367,6 +477,16 @@ export const Header: React.FC = () => {
                   <ArrowLeft className="w-4 h-4" />
                   <span>Voltar ao Dashboard</span>
                 </button>
+
+                {typedChars < TOTAL_PITCH_CHARS && (
+                  <button
+                    type="button"
+                    onClick={handleSkipTyping}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-neutral-400 hover:text-white border border-white/10 transition-all cursor-pointer"
+                  >
+                    <span>Mostrar texto completo</span>
+                  </button>
+                )}
               </div>
             </motion.div>
 
