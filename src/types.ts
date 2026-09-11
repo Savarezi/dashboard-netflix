@@ -52,5 +52,6 @@ export interface EvolucaoDataPoint {
 
 export interface PaisDataPoint {
   pais: string;
+  paisRotulo?: string;
   count: number;
 }

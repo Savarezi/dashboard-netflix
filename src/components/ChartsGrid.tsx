@@ -31,7 +31,7 @@ const CustomTooltip = ({ active, payload, label, unit = 'títulos' }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     const val = data.value;
-    const name = label || data.name || data.payload?.name || data.payload?.generoFormatado || data.payload?.pais;
+    const name = label || data.payload?.paisRotulo || data.payload?.generoFormatado || data.payload?.pais || data.name || data.payload?.name;
     const pct = data.payload?.pct;
 
     return (
@@ -376,10 +376,10 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
                   />
                   <YAxis
                     type="category"
-                    dataKey="pais"
+                    dataKey="paisRotulo"
                     stroke="#777"
-                    tick={{ fill: '#d9d9d9', fontSize: 11, fontWeight: 500 }}
-                    width={110}
+                    tick={{ fill: '#d9d9d9', fontSize: 10.5, fontWeight: 500 }}
+                    width={160}
                   />
                   <Tooltip content={<CustomTooltip unit="títulos" />} />
                   <Bar
@@ -395,7 +395,9 @@ export const ChartsGrid: React.FC<ChartsGridProps> = ({
 
           <div className="pt-3 border-t border-[#2a2a2a] flex items-center justify-between text-xs text-neutral-400">
             <span>🌍 EUA e Índia respondem por mais da metade do catálogo</span>
-            <span className="text-amber-400 font-bold">Top 1: United States</span>
+            <span className="text-amber-400 font-bold">
+              Top 1: {paisData[0]?.paisRotulo || paisData[0]?.pais || 'United States (Estados Unidos)'}
+            </span>
           </div>
         </div>
       </div>

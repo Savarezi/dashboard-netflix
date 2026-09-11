@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { NetflixTitle, FilterState, KPIStats, TipoDataPoint, GeneroDataPoint, EvolucaoDataPoint, PaisDataPoint } from '../types';
-import { GENERO_TRADUCAO } from './constants';
+import { GENERO_TRADUCAO, PAIS_TRADUCAO } from './constants';
 
 export const INITIAL_FILTERS: FilterState = {
   tipo: 'todos',
@@ -165,10 +165,17 @@ export function useNetflixData() {
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
-      .map(([pais, count]) => ({
-        pais,
-        count,
-      }));
+      .map(([pais, count]) => {
+        const pt = PAIS_TRADUCAO[pais];
+        const paisRotulo = pt && pt.toLowerCase() !== pais.toLowerCase()
+          ? `${pais} (${pt})`
+          : (pt || pais);
+        return {
+          pais,
+          paisRotulo,
+          count,
+        };
+      });
   }, [filteredData]);
 
   const resetFilters = () => {
